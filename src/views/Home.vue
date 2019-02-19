@@ -21,20 +21,45 @@
     <div v-for="product in products">
       <h2>{{ product.name}}</h2>
       <img v-bind:src="product.image_url" v-bind:alt="product.title">
-      <h4>{{ product.description}}</h4>
-      <h4>{{ product.formatted.price}}</h4>
+      <div>
+        <button v-on:click="currentProduct = product">More Info</button>
+      </div>
+      <div v-if="product === currentProduct">
+        <h4>{{ product.description}}</h4>
+        <h4>{{ product.formatted.price}}</h4>
+
+        <div>
+          <h4>Edit Product</h4>
+          <div>
+            <div>
+              Name: <input v-model="product.name">
+            </div>
+            <div>
+              Description: <input v-model="product.description">
+            </div>
+            <div>
+              Price: <input v-model="product.formatted.price">
+            </div>
+            <div>
+              Image URL: <input v-model="product.image_url">
+            </div>
+            <button v-on:click="updateProduct(product)">Update</button>
+            <button v-on:click="destroyProduct(product)">Delete</button>
+          </div>
+        </div>
+      </div>
       
     </div>
   </div>
 </template>
 
 <style>
-  div {
+/*  div {
     width: auto;
-    padding: 5px;
-    border: 5px solid gray;
+    padding: 10px;
+    border: 5px solid black;
     margin: 0; 
-  }
+  }*/
 
   img {
     width: 400px;
@@ -52,7 +77,8 @@ export default {
       newProductName: "",
       newProductDescription: "",
       newProductPrice: "",
-      newProductImageUrl: ""
+      newProductImageUrl: "",
+      currentProduct: {}
     }
   },
   created: function () {
@@ -74,6 +100,27 @@ export default {
         .then(response => {
           console.log("Success", response.data)
           this.products.push(response.data);
+        });
+    },
+    updateProduct: function(inputProduct) {
+      var params = {
+                    name: inputProduct.name,
+                    description: inputProduct.description,
+                    price: inputProduct.formatted.price,
+                    image_url: inputProduct.image_url
+                    };
+      axios.patch("/api/products/" + inputProduct.id, params)
+        .then(response => {
+          console.log("Success", response.data)
+          inputProduct = response.data;
+        });
+    },
+    destroyProduct: function(inputProduct) {
+      axios.delete("api/products/" + inputProduct.id)
+        .then(response => {
+          console.log("Success", response.data);
+          var index = this.products.indexOf(inputProduct);
+          this.products.splice(index, 1);
         });
     }
   }
